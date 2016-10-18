@@ -45,4 +45,15 @@ loadDataFrameToPg <- function(pg.conn, pg.table.name, dataframe.to.load) {
   result <- dbWriteTable(pg.conn, pg.table.name, dataframe.to.load, row.names=FALSE)
   return(result)
 }
-
+# When a new table is created from an uploaded data frame, there is no way to use a schema
+#  other than 'public'. This function takes a table name and a schema name and moves the table
+#  from the public schema to the new schema.
+# Assumes the table name existsd in the 'public' schema and that the new schema name exists.
+# On success, returns TRUE.
+changeTableSchema <- function(pg.conn, table.name, new.schema.name) {
+  schema.change.sql <- sprintf('ALTER TABLE %s SET SCHEMA %s', table.name, new.schema.name)
+  result <- dbGetQuery(pg.conn, schema.change.sql)
+  if(is.null(result)) {
+    return(TRUE)
+  }
+}
